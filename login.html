@@ -3,45 +3,183 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css">
   <title>Login - Food App</title>
   <style>
+    /* Reset a nastavení celého okna na 100% výšky */
+    html, body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial;
-      max-width: 400px;
-      margin: 50px auto;
-    }
-    input, button {
-      width: 100%;
-      padding: 10px;
-      margin: 5px 0;
-    }
-    button {
-      cursor: pointer;
-    }
-    .box {
-      border: 1px solid #ddd;
+      margin: auto;
+      display: flex;
+      justify-content: center; /* Vycentruje horizontálně */
+      align-items: center;     /* Vycentruje vertikálně */
       padding: 20px;
-      border-radius: 10px;
+      background-color: #0b132b; /* Záložní tmavá barva, pokud by nenačetlo ze style.css */
     }
+
+    .login-container {
+      width: 100%;
+      max-width: 400px;
+      display: flex;
+      justify-content: center; /* Zajistí vycentrování karty uvnitř containeru */
+    }
+
+    .login-card {
+      width: 100%; /* Karta teď správně využije maximálně 400px z containeru */
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.24);
+      backdrop-filter: blur(8px);
+      
+      /* Vycentrování textů a prvků uvnitř karty */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    h2 {
+      margin-top: 0;
+      margin-bottom: 24px;
+      font-size: 24px;
+      letter-spacing: -0.02em;
+    }
+
+    .input-group {
+      margin-bottom: 16px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text-muted, #8e8e93);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+      border-radius: 12px;
+      color: var(--text, #ffffff);
+      font-size: 15px;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+      text-align: center; /* Psaní textu od středu */
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #4f7cff;
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 0 0 3px rgba(79, 124, 255, 0.15);
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      background: linear-gradient(90deg, #4f7cff, #3b5bdb);
+      border: none;
+      color: white;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      margin-top: 12px;
+      margin-bottom: 12px;
+      transition: opacity 0.2s ease;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.9;
+    }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+      color: var(--text, #ffffff);
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      color: var(--text-muted, #8e8e93);
+      font-size: 12px;
+      margin: 16px 0;
+      width: 100%;
+    }
+
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+    }
+
+    .divider:not(:empty)::before { margin-right: .75em; }
+    .divider:not(:empty)::after { margin-left: .75em; }
+
     #msg {
-      margin-top: 10px;
-      color: green;
+      margin-top: 16px;
+      font-size: 14px;
+      font-weight: 600;
+      min-height: 20px;
     }
+    
+    .msg-success { color: #35d07f; }
+    .msg-error { color: #ff453a; }
   </style>
 </head>
 
 <body>
 
-  <div class="box">
-    <h2>Food App Login</h2>
+  <div class="login-container">
+    <div class="login-card">
+      <h2>🍱 Food App Login</h2>
 
-    <input id="email" placeholder="email" />
-    <input id="password" type="password" placeholder="password" />
+      <div class="input-group">
+        <label for="email">E-mailová adresa</label>
+        <input id="email" type="email" placeholder="jmeno@email.cz" autocomplete="email" />
+      </div>
 
-    <button onclick="signUp()">Sign up</button>
-    <button onclick="signIn()">Login</button>
+      <div class="input-group">
+        <label for="password">Heslo</label>
+        <input id="password" type="password" placeholder="••••••••" autocomplete="current-password" />
+      </div>
 
-    <div id="msg"></div>
+      <button onclick="signIn()" class="btn-primary">Přihlásit se</button>
+      
+      <div class="divider">nebo</div>
+      
+      <button onclick="signUp()" class="btn-secondary">Vytvořit nový účet</button>
+      <i style="font-size: 12px; margin-top:5px;">Pro vytvoření nového účtu zadejte e-mail a heslo.</i>
+      <div id="msg"></div>
+    </div>
   </div>
 
   <script type="module">
@@ -52,22 +190,35 @@
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhleGp1cXN3YW54aGpwamJsZHhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzIzODgsImV4cCI6MjA5Njg0ODM4OH0.CoVQPwKTfbkCkxJmLOzCZkvitmEAvh2o6dFOLomWl8w"
     )
 
+    const msgEl = document.getElementById("msg")
+
     window.signUp = async function () {
       const email = document.getElementById("email").value
       const password = document.getElementById("password").value
+
+      msgEl.className = ""
+      msgEl.innerText = "Registruji..."
 
       const { data, error } = await supabase.auth.signUp({
         email,
         password
       })
 
-      document.getElementById("msg").innerText =
-        error ? error.message : "Signup OK ✔"
+      if (error) {
+        msgEl.className = "msg-error"
+        msgEl.innerText = error.message
+      } else {
+        msgEl.className = "msg-success"
+        msgEl.innerText = "Registrace úspěšná! ✔"
+      }
     }
 
     window.signIn = async function () {
       const email = document.getElementById("email").value
       const password = document.getElementById("password").value
+
+      msgEl.className = ""
+      msgEl.innerText = "Ověřuji..."
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -75,19 +226,19 @@
       })
 
       if (error) {
-        document.getElementById("msg").innerText = error.message
+        msgEl.className = "msg-error"
+        msgEl.innerText = error.message
         return
       }
 
-      document.getElementById("msg").innerText = "Login OK ✔"
+      msgEl.className = "msg-success"
+      msgEl.innerText = "Přihlášení úspěšné! ✔"
 
-      // ulož session
       localStorage.setItem("session", JSON.stringify(data.session))
 
-      // redirect (zatím jen demo)
       setTimeout(() => {
         window.location.href = "index.html"
-      }, 1000)
+      }, 800)
     }
   </script>
 
