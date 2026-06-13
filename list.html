@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css">
+  <title>Food App - Sklad</title>
+  <style>
+    .filter-actions { display: flex; gap: 10px; margin-bottom: 12px; }
+    .filter-btn { background: #f1f5f9; border: 1px solid #cbd5e1; color: #475569; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+    .filter-btn:hover { background: #e2e8f0; color: #1e293b; }
+    #category-filters { display: flex; flex-wrap: wrap; gap: 8px 12px; margin-bottom: 20px; padding: 5px 0; }
+    #category-filters label { display: inline-flex; align-items: center; user-select: none; padding: 8px 16px; border: 1px solid #e2e8f0; border-radius: 20px; background: #f8fafc; color: #64748b; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    #category-filters input[type="checkbox"] { display: none; }
+    #category-filters label:has(input:checked) { background: #2563eb; border-color: #2563eb; color: #ffffff; box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2); }
+    #category-filters label:not(:has(input:checked)):hover { background: #f1f5f9; border-color: #cbd5e1; color: #334155; }
+  </style>
+</head>
+<body>
+
+<h2>🍱 Moje potraviny (Sklad) <button onclick="logout()">Logout</button></h2>
+
+<nav style="margin-bottom: 25px;">
+  <a href="index.html" class="nav-btn nav-btn-secondary">
+    📊 Zpět na Statistiky a Přidávání
+  </a>
+</nav>
+
+<hr />
+
+<h4>Filtr kategorií</h4>
+<div class="filter-actions">
+  <button class="filter-btn" onclick="toggleAllCategories(true)">✅ Vybrat vše</button>
+  <button class="filter-btn" onclick="toggleAllCategories(false)">❌ Zrušit výběr</button>
+</div>
+<div id="category-filters"></div>
+
+<hr />
+
+<h3>Seznam potravin</h3>
+<div id="list"></div>
+
+<script type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js"
+
+const supabase = createClient(
+  "https://xexjuqswanxhjpjbldxj.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhleGp1cXN3YW54aGpwamJsZHhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzIzODgsImV4cCI6MjA5Njg0ODM4OH0.CoVQPwKTfbkCkxJmLOzCZkvitmEAvh2o6dFOLomWl8w"
+)
+
+// OCHRANA STRÁNKY (Zůstává stejná)
+const session = JSON.parse(localStorage.getItem("session"))
+if (!session) window.location.href = "login.html"
+await supabase.auth.setSession(session)
+
+const CATEGORY_ORDER = [
+  "Mléčné výrobky", "Pečivo", "Salámy", "Maso", "Luštěniny", 
+  "Ovoce / zelenina", "Nanuky", "Sladkosti", "Nápoje", "Dochucovadla", "Trvanlivé potraviny"
+]
+
+let selectedCategories = new Set(CATEGORY_ORDER)
+let allItems = []
+
+function renderCategoryFilters() {
+  const container = document.getElementById("category-filters")
+  container.innerHTML = ""
+  selectedCategories.clear()
+
+  CATEGORY_ORDER.forEach(cat => {
+    const label = document.createElement("label")
+    const checkbox = document.createElement("input")
+    checkbox.type = "checkbox"
+    checkbox.checked = true
+    checkbox.dataset.category = cat
+
+    checkbox.addEventListener("change", () => {
+      if (checkbox.checked) selectedCategories.add(cat)
+      else selectedCategories.delete(cat)
+      renderItems()
+    })
+
+    selectedCategories.add(cat)
+    label.appendChild(checkbox)
+    label.append(cat)
+    container.appendChild(label)
+  })
+}
+
+window.toggleAllCategories = function(status) {
+  const checkboxes = document.querySelectorAll('#category-filters input[type="checkbox"]')
+  selectedCategories.clear()
+  checkboxes.forEach(checkbox => {
+    checkbox.checked = status
+    const cat = checkbox.dataset.category
+    if (status) selectedCategories.add(cat)
+  })
+  renderItems()
+}
+
+async function loadItems() {
+  const { data } = await supabase.from("food_inventory").select("*")
+  allItems = data || []
+
+  allItems.sort((a, b) => {
+    const catA = a.product_category || "Bez kategorie"
+    const catB = b.product_category || "Bez kategorie"
+    const indexA = CATEGORY_ORDER.indexOf(catA)
+    const indexB = CATEGORY_ORDER.indexOf(catB)
+    if (indexA !== indexB) return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB)
+    return new Date(a.expiry_date) - new Date(b.expiry_date)
+  })
+
+  renderItems()
+}
+
+function renderItems() {
+  const filtered = allItems.filter(item => selectedCategories.has(item.product_category || "Bez kategorie"))
+  const list = document.getElementById("list")
+  list.innerHTML = ""
+
+  const grouped = {}
+  filtered.forEach(item => {
+    const cat = item.product_category || "Bez kategorie"
+    if (!grouped[cat]) grouped[cat] = []
+    grouped[cat].push(item)
+  })
+
+  CATEGORY_ORDER.forEach(category => {
+    if (!grouped[category] || grouped[category].length === 0) return
+
+    const title = document.createElement("div")
+    title.className = "category"
+    title.innerHTML = `<span>📦 ${category}</span>`
+    list.appendChild(title)
+
+    const header = document.createElement("div")
+    header.className = "header"
+    header.innerHTML = `<div>Položka</div><div>Množství</div><div>Cena</div><div>Expirace</div><div>Akce</div>`
+    list.appendChild(header)
+
+    grouped[category].forEach(item => {
+      const today = new Date()
+      const expiry = new Date(item.expiry_date)
+      const diff = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24))
+
+      let color = "ok"
+      if (diff <= 5) color = "danger"
+      else if (diff <= 30) color = "warn"
+
+      const div = document.createElement("div")
+      div.className = "item"
+      div.innerHTML = `
+        <div>${item.product_name}</div>
+        <div>${item.quantity} ${item.unit}</div>
+        <div>${item.unit_price} Kč</div>
+        <div class="${color}" style="display:flex; flex-direction:column; line-height:1.2">
+            <span>${new Date(item.expiry_date).toLocaleDateString("cs-CZ")}</span>
+            <span style="font-size:12px; opacity:0.7;">(${diff} dní)</span>
+        </div>
+        <div class="row">
+          <button onclick="consume('${item.record_id}', ${item.quantity}, -1, ${JSON.stringify(item).replace(/"/g, '&quot;')})">➖</button>
+          <button onclick="consume('${item.record_id}', ${item.quantity}, 1, ${JSON.stringify(item).replace(/"/g, '&quot;')})">➕</button>
+        </div>`
+      list.appendChild(div)
+    })
+  })
+}
+
+window.consume = async function (id, qty, delta, item) {
+  const newQty = Number(qty) + Number(delta)
+  const user = await supabase.auth.getUser()
+
+  if (delta < 0) {
+    await supabase.from("consumption_log").insert({
+      user_id: user.data.user.id, product_name: item.product_name, product_category: item.product_category, quantity: 1, unit_price: item.unit_price, total_value: item.unit_price
+    })
+  } else {
+    await supabase.from("purchase_log").insert({
+      user_id: user.data.user.id, product_name: item.product_name, product_category: item.product_category, quantity: 1, unit_price: item.unit_price, total_value: item.unit_price
+    })
+  }
+
+  if (newQty <= 0) {
+    await supabase.from("food_inventory").delete().eq("record_id", id)
+  } else {
+    await supabase.from("food_inventory").update({ quantity: newQty }).eq("record_id", id)
+  }
+
+  await loadItems()
+}
+
+renderCategoryFilters()
+loadItems()
+
+window.logout = async function () {
+  await supabase.auth.signOut()
+  localStorage.removeItem("session")
+  window.location.href = "login.html"
+}
+</script>
+</body>
+</html>

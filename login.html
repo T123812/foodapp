@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login - Food App</title>
+  <style>
+    body {
+      font-family: Arial;
+      max-width: 400px;
+      margin: 50px auto;
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0;
+    }
+    button {
+      cursor: pointer;
+    }
+    .box {
+      border: 1px solid #ddd;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    #msg {
+      margin-top: 10px;
+      color: green;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="box">
+    <h2>Food App Login</h2>
+
+    <input id="email" placeholder="email" />
+    <input id="password" type="password" placeholder="password" />
+
+    <button onclick="signUp()">Sign up</button>
+    <button onclick="signIn()">Login</button>
+
+    <div id="msg"></div>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js"
+
+    const supabase = createClient(
+      "https://xexjuqswanxhjpjbldxj.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhleGp1cXN3YW54aGpwamJsZHhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzIzODgsImV4cCI6MjA5Njg0ODM4OH0.CoVQPwKTfbkCkxJmLOzCZkvitmEAvh2o6dFOLomWl8w"
+    )
+
+    window.signUp = async function () {
+      const email = document.getElementById("email").value
+      const password = document.getElementById("password").value
+
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password
+      })
+
+      document.getElementById("msg").innerText =
+        error ? error.message : "Signup OK ✔"
+    }
+
+    window.signIn = async function () {
+      const email = document.getElementById("email").value
+      const password = document.getElementById("password").value
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+
+      if (error) {
+        document.getElementById("msg").innerText = error.message
+        return
+      }
+
+      document.getElementById("msg").innerText = "Login OK ✔"
+
+      // ulož session
+      localStorage.setItem("session", JSON.stringify(data.session))
+
+      // redirect (zatím jen demo)
+      setTimeout(() => {
+        window.location.href = "index.html"
+      }, 1000)
+    }
+  </script>
+
+</body>
+</html>
