@@ -104,20 +104,21 @@
 <script src="https://unpkg.com/@zxing/library@latest"></script>
 <script src="foceni.js"></script>
 
-<script type="module">
 import { createClient } from "https://esm.sh/@supabase/supabase-js"
 
 const supabase = createClient(
   "https://xexjuqswanxhjpjbldxj.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhleGp1cXN3YW54aGpwamJsZHhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzIzODgsImV4cCI6MjA5Njg0ODM4OH0.CoVQPwKTfbkCkxJmLOzCZkvitmEAvh2o6dFOLomWl8w"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhleGp1cXN3YW54aGpwamJsZHhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzIzODgsImV4cCI6MjA5Njg0ODM4OH0.CoVQPwKTfbkCkxJmLOzCZkvitmEAvh0o6dFOLomWl8w"
 )
 
+let currentMonthOffset = 0
+
+// -------------------- AUTH --------------------
 const session = JSON.parse(localStorage.getItem("session"))
 if (!session) window.location.href = "login.html"
 await supabase.auth.setSession(session)
 
-let currentMonthOffset = 0
-
+// -------------------- DATE --------------------
 function getMonthRange(offset = 0) {
   const now = new Date()
   const date = new Date(now.getFullYear(), now.getMonth() + offset, 1)
@@ -126,13 +127,26 @@ function getMonthRange(offset = 0) {
   return { from, to, date }
 }
 
+// -------------------- GLOBAL ACTIONS --------------------
 window.changeMonth = function (dir) {
   currentMonthOffset += dir
   loadStats()
 }
 
+window.logout = async function () {
+  await supabase.auth.signOut()
+  localStorage.removeItem("session")
+  window.location.href = "login.html"
+}
+
+// -------------------- ADD ITEM --------------------
 window.addItem = async function () {
   const user = await supabase.auth.getUser()
+
+  if (!user?.data?.user?.id) {
+    console.log("No user")
+    return
+  }
 
   const name = document.getElementById("name").value
   const category = document.getElementById("category").value
@@ -141,185 +155,145 @@ window.addItem = async function () {
   const price = Number(document.getElementById("price").value)
   const expiry = document.getElementById("expiry").value
 
-  const { error: inventoryError } = await supabase
-    .from("food_inventory")
-    .insert({
-      user_id: user.data.user.id,
-      product_name: name,
-      product_category: category,
-      quantity: qty,
-      unit,
-      unit_price: price,
-      expiry_date: expiry
-    })
+  await supabase.from("food_inventory").insert({
+    user_id: user.data.user.id,
+    product_name: name,
+    product_category: category,
+    quantity: qty,
+    unit,
+    unit_price: price,
+    expiry_date: expiry
+  })
 
-  if (inventoryError) {
-    console.log("INVENTORY ERROR:", inventoryError)
-    return
-  }
+  await supabase.from("purchase_log").insert({
+    user_id: user.data.user.id,
+    product_name: name,
+    product_category: category,
+    quantity: qty,
+    unit_price: price,
+    total_value: qty * price
+  })
 
-  const { error: purchaseError } = await supabase
-    .from("purchase_log")
-    .insert({
-      user_id: user.data.user.id,
-      product_name: name,
-      product_category: category,
-      quantity: qty,              
-      unit_price: price,          
-      total_value: qty * price
-    })
+  document.querySelectorAll("input, select").forEach(el => {
+    if (el.type !== "file") el.value = ""
+  })
 
-  if (purchaseError) {
-    console.log("PURCHASE LOG ERROR:", purchaseError)
-  }
-
-  document.getElementById("name").value = ""
-  document.getElementById("category").value = ""
-  document.getElementById("qty").value = ""
-  document.getElementById("unit").value = "" 
-  document.getElementById("price").value = ""
-  document.getElementById("expiry").value = ""
-
-  const nameEl = document.getElementById("name")
-  const catEl = document.getElementById("category")
-  if (nameEl) nameEl.classList.remove('auto-filled')
-  if (catEl) catEl.classList.remove('auto-filled')
-
-  if (typeof loadItems === "function") loadItems()
   loadStats()
 }
 
+// -------------------- STATS --------------------
 async function loadStats() {
+  console.log("loadStats start")
+
   const user = await supabase.auth.getUser()
+  const userId = user?.data?.user?.id
+
+  if (!userId) {
+    console.log("No user in loadStats")
+    return
+  }
+
   const { from, to, date } = getMonthRange(currentMonthOffset)
 
-//  document.getElementById("stats-month").textContent =
-//    date.toLocaleDateString("cs-CZ", { month: "long", year: "numeric" })
-
-// na PC: slovně, na mobile 06/2026
-const desktopMonth = date.toLocaleDateString("cs-CZ", { month: "long", year: "numeric" });
-const mobileMonth = date.toLocaleDateString("cs-CZ", { month: "2-digit", year: "numeric" }).replace('. ', '/');
-
-document.getElementById("stats-month").innerHTML = `
-  <span class="hide-on-mobile">${desktopMonth}</span>
-  <span class="show-on-mobile">${mobileMonth}</span>
-`;
-
   const { data: consumption } = await supabase
-    .from('consumption_log')
-    .select('*')
-    .eq('user_id', user.data.user.id)
-    .gte('consumed_at', from.toISOString())
-    .lt('consumed_at', to.toISOString())
+    .from("consumption_log")
+    .select("*")
+    .eq("user_id", userId)
+    .gte("consumed_at", from.toISOString())
+    .lt("consumed_at", to.toISOString())
 
   const { data: purchases } = await supabase
-    .from('purchase_log')
-    .select('*')
-    .eq('user_id', user.data.user.id)
-    .gte('purchased_at', from.toISOString())
-    .lt('purchased_at', to.toISOString())
+    .from("purchase_log")
+    .select("*")
+    .eq("user_id", userId)
+    .gte("purchased_at", from.toISOString())
+    .lt("purchased_at", to.toISOString())
 
   const safeC = consumption || []
   const safeP = purchases || []
 
   const totalConsumed = safeC.reduce((s, r) => s + (r.total_value || 0), 0)
   const totalPurchased = safeP.reduce((s, r) => s + (r.total_value || 0), 0)
+
   const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
 
-  document.getElementById('stat-consumed').textContent = totalConsumed.toFixed(2) + ' Kč'
-  document.getElementById('stat-purchased').textContent = totalPurchased.toFixed(2) + ' Kč'
-  document.getElementById('stat-diff').textContent = (totalPurchased - totalConsumed).toFixed(2) + ' Kč'
-  document.getElementById('stat-avg-consumed').textContent = '(' + (totalConsumed / daysInMonth).toFixed(2) + ' Kč/den)'
-  document.getElementById('stat-avg-purchased').textContent = '(' + (totalPurchased / daysInMonth).toFixed(2) + ' Kč/den)'
+  document.getElementById("stat-consumed").textContent = totalConsumed.toFixed(2) + " Kč"
+  document.getElementById("stat-purchased").textContent = totalPurchased.toFixed(2) + " Kč"
+  document.getElementById("stat-diff").textContent = (totalPurchased - totalConsumed).toFixed(2) + " Kč"
+  document.getElementById("stat-avg-consumed").textContent = `(${(totalConsumed / daysInMonth).toFixed(2)} Kč/den)`
+  document.getElementById("stat-avg-purchased").textContent = `(${(totalPurchased / daysInMonth).toFixed(2)} Kč/den)`
 
   const cats = {}
+
   safeP.forEach(r => {
-    const cat = r.product_category || 'Bez kategorie'
-    if (!cats[cat]) cats[cat] = { purchased: 0, consumed: 0 }
-    cats[cat].purchased += r.total_value || 0
+    const c = r.product_category || "Bez kategorie"
+    if (!cats[c]) cats[c] = { purchased: 0, consumed: 0 }
+    cats[c].purchased += r.total_value || 0
   })
+
   safeC.forEach(r => {
-    const cat = r.product_category || 'Bez kategorie'
-    if (!cats[cat]) cats[cat] = { purchased: 0, consumed: 0 }
-    cats[cat].consumed += r.total_value || 0
+    const c = r.product_category || "Bez kategorie"
+    if (!cats[c]) cats[c] = { purchased: 0, consumed: 0 }
+    cats[c].consumed += r.total_value || 0
   })
 
-  const sorted = Object.entries(cats).sort((a, b) => b[1].consumed - a[1].consumed)
-  const container = document.getElementById('stats-categories')
+  const totalEl = document.getElementById("stats-categories")
+  const sorted = Object.entries(cats)
 
-  container.innerHTML = `<div class="cat-header"><div>Kategorie</div><div>Nakoupeno</div><div>Spotřebováno</div><div>Podíl spotřeby</div></div>` + 
-  sorted.map(([cat, d]) => {
-    const pct = totalConsumed > 0 ? Math.round((d.consumed / totalConsumed) * 100) : 0
-    return `
-      <div class="cat-row">
-        <div class="cat-name">${cat}</div>
-        <div class="cat-purchased">${d.purchased.toFixed(2)} Kč</div>
-        <div class="cat-consumed">${d.consumed.toFixed(2)} Kč</div>
-        <div class="cat-progress-wrap">
-          <div class="progress">
-            <div class="progress-bar" style="width:${pct}%"></div>
-            <div style="position:absolute; right:6px; top:50%; transform:translateY(-50%); font-size:12px; color:white; font-weight:600; mix-blend-mode: difference;">${pct} %</div>
-          </div>
+  totalEl.innerHTML =
+    `<div class="cat-header"><div>Kategorie</div><div>Nakoupeno</div><div>Spotřebováno</div><div>%</div></div>` +
+    sorted.map(([cat, d]) => {
+      const pct = totalConsumed ? Math.round((d.consumed / totalConsumed) * 100) : 0
+
+      return `
+        <div class="cat-row">
+          <div>${cat}</div>
+          <div>${d.purchased.toFixed(2)} Kč</div>
+          <div>${d.consumed.toFixed(2)} Kč</div>
+          <div>${pct}%</div>
         </div>
-      </div>`
-  }).join('')
+      `
+    }).join("")
 }
 
-// POKUS: PŘEDVOLBY
+// -------------------- PRESETS --------------------
 const drinkPresets = [
-  { name: 'Kofola 2l',        category: 'Nápoje', unit: 'ks', price: null, qty: 4, icon: '⚪' },
-  { name: 'Poděbradka 1.5l',  category: 'Nápoje', unit: 'ks', price: null, qty: 6, icon: '⚪' },
-  { name: 'Ondrášovka 1.5l',  category: 'Nápoje', unit: 'ks', price: null, qty: 6, icon: '⚪' },
-  { name: 'Mattoni 1.5l',     category: 'Nápoje', unit: 'ks', price: null, qty: 6, icon: '⚪' },
-  { name: 'Saguaro 1.5l',     category: 'Nápoje', unit: 'ks', price: null, qty: 6, icon: '⚪' },
-  { name: 'Šťáva 0.7l',       category: 'Dochucovadla', unit: 'ks', price: null, qty: 1, icon: '⚪' },
-  { name: 'Cukr 1kg',         category: 'Dochucovadla', unit: 'kg', price: null, qty: 1, icon: '⚪' },
-  { name: 'Sůl 1kg',          category: 'Dochucovadla', unit: 'kg', price: null, qty: 1, icon: '⚪' },
-  { name: 'Mouka',            category: 'Trvanlivé potraviny', unit: 'kg', price: null, qty: 1, icon: '⚪' },
-  { name: 'Olej 1l',          category: 'Trvanlivé potraviny', unit: 'l', price: null, qty: 1, icon: '⚪' },
-  { name: 'Bonbóny',          category: 'Sladkosti', unit: 'ks', price: null, qty: 1, icon: '⚪' },
-  { name: 'Čokoláda',         category: 'Sladkosti', unit: 'ks', price: null, qty: 1, icon: '⚪' },
-  { name: 'Brambůrky',        category: 'Sladkosti', unit: 'ks', price: null, qty: 1, icon: '⚪' },
-  { name: 'Tyčinky',          category: 'Sladkosti', unit: 'ks', price: null, qty: 1, icon: '⚪' },
+  { name: "Kofola 2l", category: "Nápoje", unit: "ks", qty: 4 },
+  { name: "Mattoni", category: "Nápoje", unit: "ks", qty: 6 },
+  { name: "Cukr 1kg", category: "Dochucovadla", unit: "kg", qty: 1 },
+  { name: "Mouka", category: "Trvanlivé potraviny", unit: "kg", qty: 1 },
 ]
 
 function renderPresets() {
-  const grid = document.getElementById('quick-presets-grid')
+  const grid = document.getElementById("quick-presets-grid")
   if (!grid) return
 
-  grid.innerHTML = drinkPresets.map(p => `
-    <button type="button" onclick="applyPreset(${JSON.stringify(p).replace(/"/g, '&quot;')})"
-      style="padding:10px 8px; border-radius:12px; background:rgba(79,124,255,0.08);
-             border:1px solid rgba(79,124,255,0.25); color:var(--text); cursor:pointer;
-             font-size:13px; font-weight:600; text-align:center; line-height:1.4;">
-      <div style="font-size:20px; margin-bottom:4px;">${p.icon}</div>
-      <div>${p.name}</div>
-      <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">${p.qty} ks</div>
-    </button>
-  `).join('')
+  grid.innerHTML = ""
+
+  drinkPresets.forEach(p => {
+    const btn = document.createElement("button")
+
+    btn.textContent = `${p.name} (${p.qty})`
+    btn.onclick = () => {
+      document.getElementById("name").value = p.name
+      document.getElementById("category").value = p.category
+      document.getElementById("qty").value = p.qty
+      document.getElementById("unit").value = p.unit
+    }
+
+    grid.appendChild(btn)
+  })
 }
 
-window.applyPreset = function(p) {
-  document.getElementById('name').value     = p.name
-  document.getElementById('category').value = p.category
-  document.getElementById('qty').value      = p.qty
-  document.getElementById('unit').value     = p.unit
-  if (p.price !== null) {
-    document.getElementById('price').value  = p.price
+// -------------------- INIT (IMPORTANT FIX) --------------------
+window.addEventListener("DOMContentLoaded", async () => {
+  try {
+    renderPresets()
+    await loadStats()
+  } catch (e) {
+    console.error("INIT ERROR", e)
   }
-  document.getElementById('price').focus()  // přeskočí kurzor rovnou na pole ceny
-}
-
-window.addEventListener("DOMContentLoaded", () => {
-  loadStats()
-  renderPresets()
 })
-
-window.logout = async function () {
-  await supabase.auth.signOut()
-  localStorage.removeItem("session")
-  window.location.href = "login.html"
-}
 </script>
 
 </body>
