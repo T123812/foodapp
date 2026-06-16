@@ -12,11 +12,14 @@
 
 <hr />
 
-<h3>
-  📊 Statistika:
-  <button onclick="changeMonth(-1)">←</button>
-  <span id="stats-month"></span>
-  <button onclick="changeMonth(1)">→</button>
+<h3 class="stats-header">
+  <span class="stats-left">📊 Statistika:</span>
+
+  <span class="stats-middle">
+    <button onclick="changeMonth(-1)">←</button>
+    <span id="stats-month"></span>
+    <button onclick="changeMonth(1)">→</button>
+  </span>
 </h3>
 
 <div class="stats-grid">
@@ -91,6 +94,7 @@
       📋 Otevřít sklad
     </a>
   </div>
+  <div class="quick-presets-grid" id="quick-presets-grid"></div>
 </div>
 
 <div id="loading-status" style="display: none; color: var(--accent); font-weight: 600; margin-top: 8px; font-size: 12px; letter-spacing: 0.05em; text-align: left;">
@@ -262,6 +266,53 @@ document.getElementById("stats-month").innerHTML = `
 }
 
 loadStats()
+
+// POKUS: PŘEDVOLBY
+const drinkPresets = [
+  { name: 'Kofola 2l',        category: 'Nápoje', unit: 'ks', price: null, qty: 4, icon: '⚪' },
+  { name: 'Poděbradka 1.5l',  category: 'Nápoje', unit: 'ks', price: null, qty: 6, icon: '⚪' },
+  { name: 'Ondrášovka 1.5l',  category: 'Nápoje', unit: 'ks', price: null, qty: 6, icon: '⚪' },
+  { name: 'Mattoni 1.5l',     category: 'Nápoje', unit: 'ks', price: null, qty: 6, icon: '⚪' },
+  { name: 'Saguaro 1.5l',     category: 'Nápoje', unit: 'ks', price: null, qty: 6, icon: '⚪' },
+  { name: 'Šťáva 0.7l',       category: 'Dochucovadla', unit: 'ks', price: null, qty: 1, icon: '⚪' },
+  { name: 'Cukr 1kg',         category: 'Dochucovadla', unit: 'kg', price: null, qty: 1, icon: '⚪' },
+  { name: 'Sůl 1kg',          category: 'Dochucovadla', unit: 'kg', price: null, qty: 1, icon: '⚪' },
+  { name: 'Mouka',            category: 'Trvanlivé potraviny', unit: 'kg', price: null, qty: 1, icon: '⚪' },
+  { name: 'Olej 1l',          category: 'Trvanlivé potraviny', unit: 'l', price: null, qty: 1, icon: '⚪' },
+  { name: 'Bonbóny',          category: 'Sladkosti', unit: 'ks', price: null, qty: 1, icon: '⚪' },
+  { name: 'Čokoláda',         category: 'Sladkosti', unit: 'ks', price: null, qty: 1, icon: '⚪' },
+  { name: 'Brambůrky',        category: 'Sladkosti', unit: 'ks', price: null, qty: 1, icon: '⚪' },
+  { name: 'Tyčinky',          category: 'Sladkosti', unit: 'ks', price: null, qty: 1, icon: '⚪' },
+]
+
+function renderPresets() {
+  const grid = document.getElementById('quick-presets-grid')
+  if (!grid) return
+
+  grid.innerHTML = drinkPresets.map(p => `
+    <button type="button" onclick="applyPreset(${JSON.stringify(p).replace(/"/g, '&quot;')})"
+      style="padding:10px 8px; border-radius:12px; background:rgba(79,124,255,0.08);
+             border:1px solid rgba(79,124,255,0.25); color:var(--text); cursor:pointer;
+             font-size:13px; font-weight:600; text-align:center; line-height:1.4;">
+      <div style="font-size:20px; margin-bottom:4px;">${p.icon}</div>
+      <div>${p.name}</div>
+      <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">${p.qty} ks</div>
+    </button>
+  `).join('')
+}
+
+window.applyPreset = function(p) {
+  document.getElementById('name').value     = p.name
+  document.getElementById('category').value = p.category
+  document.getElementById('qty').value      = p.qty
+  document.getElementById('unit').value     = p.unit
+  if (p.price !== null) {
+    document.getElementById('price').value  = p.price
+  }
+  document.getElementById('price').focus()  // přeskočí kurzor rovnou na pole ceny
+}
+
+renderPresets()
 
 window.logout = async function () {
   await supabase.auth.signOut()

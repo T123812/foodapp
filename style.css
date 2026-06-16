@@ -96,6 +96,25 @@ h2 {
   margin-top: 5px;
 }
 
+.stats-header{
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+}
+
+/* levá část */
+.stats-left{
+  justify-self: start;
+}
+
+/* střed (měsíc + šipky) */
+.stats-middle{
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 /* CATEGORY TITLE */ 
 .category { 
     margin-top: 25px; 
@@ -171,6 +190,22 @@ h2 {
 /* CATEGORY BAR */
 #stats-categories > div {
   background: var(--card);
+}
+
+#stats-month{
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+
+  width: 150px;
+  padding: 4px 10px;
+
+  border-radius: 999px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+
+  text-align: center;
+  font-weight: 600;
 }
 
 .form-card {
@@ -404,6 +439,33 @@ select:focus {
   display: none;
 }
 
+.quick-presets-grid {
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:8px;
+  margin-top:15px;
+}
+
+.preset-btn{
+  padding:10px;
+  border-radius:12px;
+  background:rgba(79,124,255,.08);
+  border:1px solid rgba(79,124,255,.25);
+  color:var(--text);
+  cursor:pointer;
+  text-align:center;
+}
+
+.preset-icon{
+  font-size:22px;
+  margin-bottom:5px;
+}
+
+.preset-qty{
+  font-size:11px;
+  color:var(--muted);
+}
+
 /* ==========================================================================
    RESPONSIVE DESIGN (PRO OBRAZOVKY POD 940px)
    ========================================================================== */
@@ -481,5 +543,22 @@ select:focus {
   }
   .show-on-mobile {
     display: inline;
+  }
+
+  .quick-presets-grid{
+    grid-template-columns:repeat(3,1fr);
+  }
+
+  .stats-header{
+    grid-template-columns: 1fr auto 1fr;
+  }
+
+  .stats-middle button{
+    padding: 6px 10px;
+  }
+
+  #stats-month{
+    width: 100px;
+    text-align: center;
   }
 }
