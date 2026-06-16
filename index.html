@@ -46,10 +46,10 @@
 <div class="form-card">
   <h3>➕ Přidat potravinu</h3>
   
-  <div class="form-grid" style="display: grid; grid-template-columns: 2fr 2fr 1fr 1fr 2fr 2fr; gap: 10px; margin-bottom: 12px; width: 100%;">
-    <input id="name" placeholder="Název potraviny" style="width: 100%; box-sizing: border-box;" />
+  <div class="form-grid">
+    <input id="name" placeholder="Název potraviny" />
     
-    <select id="category" style="width: 100%; box-sizing: border-box;">
+    <select id="category">
       <option value="" disabled selected>Vyber kategorii</option>
       <option value="Mléčné výrobky">Mléčné výrobky</option>
       <option value="Pečivo">Pečivo</option>
@@ -64,30 +64,30 @@
       <option value="Trvanlivé potraviny">Trvanlivé potraviny</option>
     </select>
     
-    <input id="qty" type="number" placeholder="Množství" min="0" style="width: 100%; box-sizing: border-box; text-align: center; padding-inline: 4px;" />
+    <input id="qty" type="number" placeholder="Množství" min="0" />
     
-    <select id="unit" style="width: 100%; box-sizing: border-box; padding-inline: 4px;">
+    <select id="unit">
       <option value="ks" selected>ks</option>
       <option value="kg">kg</option>
       <option value="l">l</option>
     </select>
     
-    <input id="price" type="number" placeholder="Cena za jednotku" min="0" style="width: 100%; box-sizing: border-box;" />
-    <input id="expiry" type="date" style="width: 100%; box-sizing: border-box;" />
+    <input id="price" type="number" placeholder="Cena za jednotku" min="0" />
+    <input id="expiry" type="date" />
   </div>
   
-  <div style="display: grid; grid-template-columns: 2fr 7fr 2fr; gap: 10px; align-items: center; margin-top: 5px; width: 100%;">
+  <div class="form-buttons">
     <input type="file" id="barcode-photo-input" accept="image/*" style="display: none;">
     
-    <button type="button" id="barcode-upload-btn" style="width: 100%; padding: 12px 5px; font-size: 14px; background: rgba(79, 124, 255, 0.15); border: 1px solid rgba(79, 124, 255, 0.4); color: var(--text); border-radius: 12px; cursor: pointer; white-space: nowrap; font-weight: 600; box-sizing: border-box; text-align: center;">
+    <button type="button" id="barcode-upload-btn">
       📷 Nahrát fotku
     </button>
     
-    <button onclick="addItem()" style="width: 100%; padding: 12px 5px; border-radius: 12px; background: linear-gradient(90deg, #4f7cff, #3b5bdb); border: none; color: white; font-weight: 600; cursor: pointer; white-space: nowrap; box-sizing: border-box; text-align: center;">
+    <button onclick="addItem()" class="primary-btn-submit">
       Přidat do skladu
     </button>
 
-    <a href="list.html" style="width: 100%; padding: 12px 5px; font-size: 14px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); color: var(--text); border-radius: 12px; text-decoration: none; font-weight: 600; white-space: nowrap; text-align: center; display: inline-block; box-sizing: border-box;">
+    <a href="list.html" class="open-storage-btn">
       📋 Otevřít sklad
     </a>
   </div>
@@ -108,7 +108,6 @@ const supabase = createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhleGp1cXN3YW54aGpwamJsZHhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzIzODgsImV4cCI6MjA5Njg0ODM4OH0.CoVQPwKTfbkCkxJmLOzCZkvitmEAvh2o6dFOLomWl8w"
 )
 
-// OCHRANA STRÁNKY
 const session = JSON.parse(localStorage.getItem("session"))
 if (!session) window.location.href = "login.html"
 await supabase.auth.setSession(session)
@@ -128,8 +127,6 @@ window.changeMonth = function (dir) {
   loadStats()
 }
 
-// === UPRAVENO: Zápis do food_inventory i purchase_log zároveň ===
-// === KOMPLETNÍ FUNKČNÍ REPRODUKCE SOUČASNÉHO + PŮVODNÍHO KÓDU ===
 window.addItem = async function () {
   const user = await supabase.auth.getUser()
 
@@ -140,7 +137,6 @@ window.addItem = async function () {
   const price = Number(document.getElementById("price").value)
   const expiry = document.getElementById("expiry").value
 
-  // 1. Zápis do skladu
   const { error: inventoryError } = await supabase
     .from("food_inventory")
     .insert({
@@ -158,15 +154,14 @@ window.addItem = async function () {
     return
   }
 
-  // 2. Nákupní log (opraveno podle původního funkčního vzoru)
   const { error: purchaseError } = await supabase
     .from("purchase_log")
     .insert({
       user_id: user.data.user.id,
       product_name: name,
       product_category: category,
-      quantity: qty,              // Vráceno zpět
-      unit_price: price,          // Vráceno zpět
+      quantity: qty,              
+      unit_price: price,          
       total_value: qty * price
     })
 
@@ -174,21 +169,18 @@ window.addItem = async function () {
     console.log("PURCHASE LOG ERROR:", purchaseError)
   }
 
-  // 3. Vyčištění formuláře
   document.getElementById("name").value = ""
   document.getElementById("category").value = ""
   document.getElementById("qty").value = ""
-  document.getElementById("unit").value = "" // Reset na prázdnou hodnotu dle tvého originálu
+  document.getElementById("unit").value = "" 
   document.getElementById("price").value = ""
   document.getElementById("expiry").value = ""
 
-  // Reset zelených rámečků po vyfocení
   const nameEl = document.getElementById("name")
   const catEl = document.getElementById("category")
   if (nameEl) nameEl.classList.remove('auto-filled')
   if (catEl) catEl.classList.remove('auto-filled')
 
-  // Spuštění loadů (pokud na této stránce nemáš loadItems, nevadí, loadStats zafunguje)
   if (typeof loadItems === "function") loadItems()
   loadStats()
 }
@@ -197,8 +189,17 @@ async function loadStats() {
   const user = await supabase.auth.getUser()
   const { from, to, date } = getMonthRange(currentMonthOffset)
 
-  document.getElementById("stats-month").textContent =
-    date.toLocaleDateString("cs-CZ", { month: "long", year: "numeric" })
+//  document.getElementById("stats-month").textContent =
+//    date.toLocaleDateString("cs-CZ", { month: "long", year: "numeric" })
+
+// na PC: slovně, na mobile 06/2026
+const desktopMonth = date.toLocaleDateString("cs-CZ", { month: "long", year: "numeric" });
+const mobileMonth = date.toLocaleDateString("cs-CZ", { month: "2-digit", year: "numeric" }).replace('. ', '/');
+
+document.getElementById("stats-month").innerHTML = `
+  <span class="hide-on-mobile">${desktopMonth}</span>
+  <span class="show-on-mobile">${mobileMonth}</span>
+`;
 
   const { data: consumption } = await supabase
     .from('consumption_log')

@@ -132,16 +132,12 @@ h2 {
   grid-template-columns: 1fr 1fr 1fr 1fr 120px;
   align-items: center;
   gap: 10px;
-
   padding: 12px;
   margin: 6px 0;
-
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 12px;
-
   transition: 0.2s;
-
   text-align: center;
 }
 
@@ -193,13 +189,27 @@ h2 {
   color: #e9eefc;
 }
 
-/* GRID FORM (Upraveno pro menší množství a jednotku) */
+/* GRID FORM (Desktopní nastavení přesunuto z HTML inline stylů) */
 .form-grid {
   display: grid;
-  /* Sloupce: název(1), kategorie(1), množství(0.5), jednotka(0.5), cena(1), záruka(1) */
-  grid-template-columns: 1fr 1fr 0.5fr 0.5fr 1fr 1fr;
+  grid-template-columns: 2fr 2fr 1fr 1fr 2fr 2fr;
   gap: 10px;
   margin-bottom: 12px;
+  width: 100%;
+}
+
+.form-grid input, .form-grid select {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#qty {
+  text-align: center;
+  padding-inline: 4px;
+}
+
+#unit {
+  padding-inline: 4px;
 }
 
 /* INPUTS (lepší kontrast) */
@@ -217,7 +227,68 @@ h2 {
   box-shadow: 0 0 0 3px rgba(79,124,255,0.2);
 }
 
-/* PRIMARY BUTTON */
+/* SPODNÍ TLAČÍTKA FORMULÁŘE (Desktop) */
+.form-buttons {
+  display: grid;
+  grid-template-columns: 2fr 7fr 2fr;
+  gap: 10px;
+  align-items: center;
+  margin-top: 5px;
+  width: 100%;
+}
+
+#barcode-upload-btn {
+  width: 100%;
+  padding: 12px 5px;
+  font-size: 14px;
+  background: rgba(79, 124, 255, 0.15);
+  border: 1px solid rgba(79, 124, 255, 0.4);
+  color: var(--text);
+  border-radius: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-weight: 600;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.primary-btn-submit {
+  width: 100%;
+  padding: 12px 5px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #4f7cff, #3b5bdb);
+  border: none;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  box-sizing: border-box;
+  text-align: center;
+  transition: 0.2s;
+}
+
+.primary-btn-submit:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.open-storage-btn {
+  width: 100%;
+  padding: 12px 5px;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  white-space: nowrap;
+  text-align: center;
+  display: inline-block;
+  box-sizing: border-box;
+}
+
+/* PRIMARY BUTTON (Z původního CSS zbylo) */
 .primary-btn {
   width: 100%;
   padding: 12px;
@@ -235,17 +306,16 @@ h2 {
   filter: brightness(1.05);
 }
 
+/* KATEGORIE TABULKA */
 .cat-row {
   display: grid;
   grid-template-columns: 1.5fr 0.8fr 1fr 2fr;
   gap: 12px;
   align-items: center;
-
   padding: 12px 14px;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 12px;
-
   transition: 0.2s;
 }
 
@@ -259,7 +329,6 @@ h2 {
   background: rgba(255,255,255,0.06);
   border-radius: 999px;
   overflow: hidden;
-
   flex: 1;
   position: relative;
 }
@@ -275,14 +344,11 @@ h2 {
   display: grid;
   grid-template-columns: 1.5fr 0.8fr 1fr 2fr;
   gap: 12px;
-
   padding: 10px 14px;
   margin-top: 10px;
-
   font-size: 13px;
   color: var(--muted);
   letter-spacing: 0.08em;
-
   border-bottom: 1px solid var(--border);
 }
 
@@ -331,4 +397,89 @@ select:focus {
   background: rgba(53, 208, 127, 0.15) !important;
   border-color: var(--ok) !important;
   box-shadow: 0 0 0 2px rgba(53, 208, 127, 0.2);
+}
+
+/* Výchozí stav pro desktop */
+.show-on-mobile {
+  display: none;
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN (PRO OBRAZOVKY POD 940px)
+   ========================================================================== */
+@media screen and (max-width: 940px) {
+  body {
+    padding: 15px;
+  }
+
+  /* 1. Horní statistiky (3 sloupce na 1) */
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  /* 2. Formulář (Přeskládání prvků do dvojic pod sebou) */
+  .form-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  #name, #category {
+    grid-column: span 2; /* Název a kategorie budou přes celou šířku řádku */
+  }
+
+  /* Spodní tlačítka pod formulářem se seřadí pod sebe */
+  .form-buttons {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  /* 3. Kategorie (Transformace řádků na samostatné karty) */
+  .cat-header {
+    display: none; /* Skryje tabulkové záhlaví */
+  }
+
+  .cat-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 16px;
+    text-align: left;
+  }
+
+  .cat-name {
+    grid-column: span 2;
+    font-size: 16px;
+    font-weight: 700;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+    color: var(--accent);
+  }
+
+  /* Dynamické vytvoření textových popisků před číselnými hodnotami */
+  .cat-purchased::before {
+    content: "Nakoupeno: ";
+    color: var(--muted);
+    font-size: 12px;
+    display: block;
+  }
+
+  .cat-consumed::before {
+    content: "Spotřebováno: ";
+    color: var(--muted);
+    font-size: 12px;
+    display: block;
+  }
+
+  .cat-progress-wrap {
+    grid-column: span 2;
+    margin-top: 6px;
+  }
+
+  /* Stav pro mobil */
+  .hide-on-mobile {
+    display: none;
+  }
+  .show-on-mobile {
+    display: inline;
+  }
 }
