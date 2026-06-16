@@ -265,8 +265,6 @@ document.getElementById("stats-month").innerHTML = `
   }).join('')
 }
 
-loadStats()
-
 // POKUS: PŘEDVOLBY
 const drinkPresets = [
   { name: 'Kofola 2l',        category: 'Nápoje', unit: 'ks', price: null, qty: 4, icon: '⚪' },
@@ -312,7 +310,10 @@ window.applyPreset = function(p) {
   document.getElementById('price').focus()  // přeskočí kurzor rovnou na pole ceny
 }
 
-renderPresets()
+window.addEventListener("DOMContentLoaded", () => {
+  loadStats()
+  renderPresets()
+})
 
 window.logout = async function () {
   await supabase.auth.signOut()
