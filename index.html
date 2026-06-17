@@ -12,8 +12,8 @@
 
 <hr />
 
-<h3 class="stats-header">
-  <span class="stats-left">📊 Statistika:</span>
+<h3 class="stats-header"> 
+  <span class="stats-left">📊 Měsíční stats</span>
 
   <span class="stats-middle">
     <button onclick="changeMonth(-1)">←</button>
@@ -41,7 +41,7 @@
   </div>
 </div>
 
-<h4>Statistika dle kategorií</h4>
+<h4>📊 Statistika dle kategorií</h4>
 <div id="stats-categories"></div>
 
 <hr />
@@ -270,19 +270,20 @@ loadStats()
 // POKUS: PŘEDVOLBY
 const drinkPresets = [
   { name: 'Kofola 2l',        category: 'Nápoje', unit: 'ks', price: null, qty: 4, img: 'img/kofola.png' },
-  { name: 'Poděbradka 1.5l',  category: 'Nápoje', unit: 'ks', price: null, qty: 6, img: 'img/kofola.png'},
-  { name: 'Ondrášovka 1.5l',  category: 'Nápoje', unit: 'ks', price: null, qty: 6, img: 'img/kofola.png'},
-  { name: 'Mattoni 1.5l',     category: 'Nápoje', unit: 'ks', price: null, qty: 6, img: 'img/kofola.png'},
-  { name: 'Saguaro 1.5l',     category: 'Nápoje', unit: 'ks', price: null, qty: 6, img: 'img/kofola.png'},
-  { name: 'Šťáva 0.7l',       category: 'Dochucovadla', unit: 'ks', price: null, qty: 1, img: 'img/kofola.png'},
-  { name: 'Cukr 1kg',         category: 'Dochucovadla', unit: 'kg', price: null, qty: 1, img: 'img/kofola.png'},
-  { name: 'Sůl 1kg',          category: 'Dochucovadla', unit: 'kg', price: null, qty: 1, img: 'img/kofola.png'},
-  { name: 'Mouka',            category: 'Trvanlivé potraviny', unit: 'kg', price: null, qty: 1, img: 'img/kofola.png'},
-  { name: 'Olej 1l',          category: 'Trvanlivé potraviny', unit: 'l', price: null, qty: 1, img: 'img/kofola.png'},
-  { name: 'Bonbóny',          category: 'Sladkosti', unit: 'ks', price: null, qty: 1, img: 'img/kofola.png'},
-  { name: 'Čokoláda',         category: 'Sladkosti', unit: 'ks', price: null, qty: 1, img: 'img/kofola.png'},
-  { name: 'Brambůrky',        category: 'Sladkosti', unit: 'ks', price: null, qty: 1, img: 'img/kofola.png'},
-  { name: 'Tyčinky',          category: 'Sladkosti', unit: 'ks', price: null, qty: 1, img: 'img/kofola.png'},
+  { name: 'Poděbradka 1.5l',  category: 'Nápoje', unit: 'ks', price: null, qty: 6, img: 'img/podebradka.png'},
+  { name: 'Ondrášovka 1.5l',  category: 'Nápoje', unit: 'ks', price: null, qty: 6, img: 'img/ondrasovka.png'},
+  { name: 'Mattoni 1.5l',     category: 'Nápoje', unit: 'ks', price: null, qty: 6, img: 'img/mattoni.png'},
+  { name: 'Dobrá voda 1.5l',  category: 'Nápoje', unit: 'ks', price: null, qty: 6, img: 'img/dobra_voda.png'},
+  { name: 'Šťáva 0.7l',       category: 'Dochucovadla', unit: 'ks', price: null, qty: 1, img: 'img/stava.png'},
+  { name: 'Cukr 1kg',         category: 'Dochucovadla', unit: 'kg', price: null, qty: 1, img: 'img/cukr.png'},
+  { name: 'Sůl 1kg',          category: 'Dochucovadla', unit: 'kg', price: null, qty: 1, img: 'img/sul.png'},
+  { name: 'Mouka',            category: 'Trvanlivé potraviny', unit: 'kg', price: null, qty: 1, img: 'img/mouka.png'},
+  { name: 'Olej 1l',          category: 'Trvanlivé potraviny', unit: 'l', price: null, qty: 1, img: 'img/olej.png'},
+  { name: 'Bonbóny',          category: 'Sladkosti', unit: 'ks', price: null, qty: 1, img: 'img/bonbony.png'},
+  { name: 'Čokoláda',         category: 'Sladkosti', unit: 'ks', price: null, qty: 1, img: 'img/cokolada.png'},
+  { name: 'Brambůrky',        category: 'Sladkosti', unit: 'ks', price: null, qty: 1, img: 'img/bramburky.png'},
+  { name: 'Tyčinky',          category: 'Sladkosti', unit: 'ks', price: null, qty: 1, img: 'img/tycinky.png'},
+  { name: 'Kečup',            category: 'Dochucovadla', unit: 'ks', price: null, qty: 1, img: 'img/kecup.png'},
 ]
 
 function renderPresets() {

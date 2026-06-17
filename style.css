@@ -561,4 +561,12 @@ select:focus {
     width: 100px;
     text-align: center;
   }
+
+  .stats-left {
+    font-size: 14px;
+  }
+
+  .cat-row {
+    text-align: center;
+  }
 }
